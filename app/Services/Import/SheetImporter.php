@@ -16,9 +16,7 @@ class SheetImporter
         private readonly GoogleSheetsService $googleSheets,
         private readonly TableSchemaManager  $schemaManager,
         private readonly ColumnMapper        $columnMapper,
-    )
-    {
-    }
+    ) {}
 
     public function importSource(SheetSource $source): ImportRun
     {
@@ -101,6 +99,21 @@ class SheetImporter
             throw new InvalidArgumentException(
                 "Target [{$tableName}] has no mappings."
             );
+        }
+
+        $requiredSourceColumns = $mappings
+            ->pluck('source_column')
+            ->values()
+            ->all();
+
+        foreach ($sourceRows as $sourceRow) {
+            foreach ($requiredSourceColumns as $column) {
+                if (! array_key_exists($column, $sourceRow)) {
+                    throw new \RuntimeException(
+                        "Missing required Google Sheet column [{$column}] for target [{$tableName}]."
+                    );
+                }
+            }
         }
 
         $rows = [];
