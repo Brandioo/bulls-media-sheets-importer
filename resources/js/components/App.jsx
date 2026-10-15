@@ -172,6 +172,195 @@ export default function App() {
         });
     }
 
+    async function editSource(source) {
+        const name = window.prompt(
+            'Source name:',
+            source.name
+        );
+
+        if (name === null) {
+            return;
+        }
+
+        const spreadsheetId = window.prompt(
+            'Spreadsheet ID:',
+            source.spreadsheet_id
+        );
+
+        if (spreadsheetId === null) {
+            return;
+        }
+
+        await performAction(async () => {
+            await axios.put(
+                `/api/sources/${source.id}`,
+                {
+                    name,
+                    spreadsheet_id: spreadsheetId,
+                    active: Boolean(source.active),
+                }
+            );
+
+            return 'Source updated successfully.';
+        });
+    }
+
+    async function editTab(tab) {
+        const name = window.prompt(
+            'Tab name:',
+            tab.name
+        );
+
+        if (name === null) {
+            return;
+        }
+
+        const headerRow = window.prompt(
+            'Header row:',
+            String(tab.header_row)
+        );
+
+        if (headerRow === null) {
+            return;
+        }
+
+        await performAction(async () => {
+            await axios.put(
+                `/api/tabs/${tab.id}`,
+                {
+                    sheet_source_id:
+                        Number(tab.sheet_source_id),
+                    name,
+                    header_row: Number(headerRow),
+                    active: Boolean(tab.active),
+                }
+            );
+
+            return 'Tab updated successfully.';
+        });
+    }
+
+    async function editTarget(target) {
+        const tableName = window.prompt(
+            'Database table:',
+            target.table_name
+        );
+
+        if (tableName === null) {
+            return;
+        }
+
+        const writeMode = window.prompt(
+            'Write mode: insert, truncate_insert, or upsert',
+            target.write_mode
+        );
+
+        if (writeMode === null) {
+            return;
+        }
+
+        if (
+            ![
+                'insert',
+                'truncate_insert',
+                'upsert',
+            ].includes(writeMode)
+        ) {
+            setError(
+                'Write mode must be insert, truncate_insert, or upsert.'
+            );
+
+            return;
+        }
+
+        await performAction(async () => {
+            await axios.put(
+                `/api/targets/${target.id}`,
+                {
+                    sheet_tab_id:
+                        Number(target.sheet_tab_id),
+                    table_name: tableName,
+                    write_mode: writeMode,
+                    unique_by:
+                        target.unique_by ?? null,
+                    active: Boolean(target.active),
+                }
+            );
+
+            return 'Target updated successfully.';
+        });
+    }
+
+    async function editMapping(mapping) {
+        const sourceColumn = window.prompt(
+            'Google Sheet column:',
+            mapping.source_column
+        );
+
+        if (sourceColumn === null) {
+            return;
+        }
+
+        const targetColumn = window.prompt(
+            'Database column:',
+            mapping.target_column
+        );
+
+        if (targetColumn === null) {
+            return;
+        }
+
+        const targetType = window.prompt(
+            'Type: string, text, integer, bigInteger, decimal, boolean, date, datetime, or json',
+            mapping.target_type
+        );
+
+        if (targetType === null) {
+            return;
+        }
+
+        const allowedTypes = [
+            'string',
+            'text',
+            'integer',
+            'bigInteger',
+            'decimal',
+            'boolean',
+            'date',
+            'datetime',
+            'json',
+        ];
+
+        if (!allowedTypes.includes(targetType)) {
+            setError(
+                `Invalid type. Use: ${allowedTypes.join(', ')}.`
+            );
+
+            return;
+        }
+
+        await performAction(async () => {
+            await axios.put(
+                `/api/mappings/${mapping.id}`,
+                {
+                    import_target_id:
+                        Number(mapping.import_target_id),
+                    source_column: sourceColumn,
+                    target_column: targetColumn,
+                    target_type: targetType,
+                    type_options:
+                        mapping.type_options ?? null,
+                    nullable:
+                        Boolean(mapping.nullable),
+                    default_value:
+                        mapping.default_value ?? null,
+                }
+            );
+
+            return 'Mapping updated successfully.';
+        });
+    }
+
     async function runImport(source) {
         if (
             !window.confirm(
@@ -689,6 +878,18 @@ export default function App() {
                                         onImport={
                                             runImport
                                         }
+                                        onEditSource={
+                                            editSource
+                                        }
+                                        onEditTab={
+                                            editTab
+                                        }
+                                        onEditTarget={
+                                            editTarget
+                                        }
+                                        onEditMapping={
+                                            editMapping
+                                        }
                                         onDeleteSource={
                                             deleteSource
                                         }
@@ -719,6 +920,10 @@ export default function App() {
 function SourceCard({
                         source,
                         onImport,
+                        onEditSource,
+                        onEditTab,
+                        onEditTarget,
+                        onEditMapping,
                         onDeleteSource,
                         onDeleteTab,
                         onDeleteTarget,
@@ -745,6 +950,15 @@ function SourceCard({
                     </button>
 
                     <button
+                        className="secondary-button"
+                        onClick={() =>
+                            onEditSource(source)
+                        }
+                    >
+                        Edit
+                    </button>
+
+                    <button
                         className="danger-button"
                         onClick={() =>
                             onDeleteSource(
@@ -768,16 +982,25 @@ function SourceCard({
                                 Tab: {tab.name}
                             </strong>
 
-                            <button
-                                className="link-danger"
-                                onClick={() =>
-                                    onDeleteTab(
-                                        tab
-                                    )
-                                }
-                            >
-                                Delete tab
-                            </button>
+                            <div className="actions">
+                                <button
+                                    className="secondary-button"
+                                    onClick={() =>
+                                        onEditTab(tab)
+                                    }
+                                >
+                                    Edit tab
+                                </button>
+
+                                <button
+                                    className="icon-danger-button"
+                                    onClick={() => onDeleteTab(tab)}
+                                    title="Delete tab"
+                                    aria-label="Delete tab"
+                                >
+                                    <TrashIcon/>
+                                </button>
+                            </div>
                         </div>
 
                         {(tab.targets ?? []).map(
@@ -802,16 +1025,27 @@ function SourceCard({
                                             }
                                         </span>
 
-                                        <button
-                                            className="link-danger"
-                                            onClick={() =>
-                                                onDeleteTarget(
-                                                    target
-                                                )
-                                            }
-                                        >
-                                            Delete target
-                                        </button>
+                                        <div className="actions">
+                                            <button
+                                                className="secondary-button"
+                                                onClick={() =>
+                                                    onEditTarget(
+                                                        target
+                                                    )
+                                                }
+                                            >
+                                                Edit target
+                                            </button>
+
+                                            <button
+                                                className="icon-danger-button"
+                                                onClick={() => onDeleteTab(tab)}
+                                                title="Delete tab"
+                                                aria-label="Delete tab"
+                                            >
+                                                <TrashIcon/>
+                                            </button>
+                                        </div>
                                     </div>
 
                                     <div className="mapping-table">
@@ -825,7 +1059,7 @@ function SourceCard({
                                             <span>
                                                 Type
                                             </span>
-                                            <span />
+                                            <span/>
                                         </div>
 
                                         {(
@@ -841,34 +1075,44 @@ function SourceCard({
                                                         mapping.id
                                                     }
                                                 >
-                                                    <span>
-                                                        {
-                                                            mapping.source_column
-                                                        }
-                                                    </span>
-
-                                                    <span>
-                                                        {
-                                                            mapping.target_column
-                                                        }
-                                                    </span>
-
-                                                    <span>
-                                                        {
-                                                            mapping.target_type
-                                                        }
-                                                    </span>
-
-                                                    <button
-                                                        className="link-danger"
-                                                        onClick={() =>
-                                                            onDeleteMapping(
-                                                                mapping
-                                                            )
-                                                        }
+                                                    <span
+                                                        className="mapping-cell"
+                                                        data-label="Sheet"
                                                     >
-                                                        Delete
-                                                    </button>
+                                                        {mapping.source_column}
+                                                    </span>
+
+                                                    <span
+                                                        className="mapping-cell"
+                                                        data-label="Database"
+                                                    >
+                                                        {mapping.target_column}
+                                                    </span>
+
+                                                    <span
+                                                        className="mapping-cell"
+                                                        data-label="Type"
+                                                    >
+                                                        {mapping.target_type}
+                                                    </span>
+
+                                                    <div className="mapping-actions">
+                                                        <button
+                                                            className="edit-button"
+                                                            onClick={() => onEditMapping(mapping)}
+                                                        >
+                                                            Edit
+                                                        </button>
+
+                                                        <button
+                                                            className="icon-danger-button"
+                                                            onClick={() => onDeleteMapping(mapping)}
+                                                            title="Delete mapping"
+                                                            aria-label="Delete mapping"
+                                                        >
+                                                            <TrashIcon />
+                                                        </button>
+                                                    </div>
                                                 </div>
                                             )
                                         )}
@@ -883,7 +1127,7 @@ function SourceCard({
     );
 }
 
-function ImportHistory({ runs }) {
+function ImportHistory({runs}) {
     return (
         <section>
             <h2>Import History</h2>
@@ -939,7 +1183,7 @@ function ImportHistory({ runs }) {
     );
 }
 
-function Card({ title, children }) {
+function Card({title, children}) {
     return (
         <div className="card">
             <h2>{title}</h2>
@@ -948,7 +1192,7 @@ function Card({ title, children }) {
     );
 }
 
-function Stat({ label, value }) {
+function Stat({label, value}) {
     return (
         <div className="stat">
             <strong>{value}</strong>
@@ -1025,7 +1269,7 @@ function Select({
     );
 }
 
-function SubmitButton({ children }) {
+function SubmitButton({children}) {
     return (
         <button
             className="primary-button"
@@ -1033,6 +1277,28 @@ function SubmitButton({ children }) {
         >
             {children}
         </button>
+    );
+}
+
+function TrashIcon() {
+    return (
+        <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+        >
+            <path d="M3 6h18"/>
+            <path d="M8 6V4h8v2"/>
+            <path d="M19 6l-1 14H6L5 6"/>
+            <path d="M10 11v5"/>
+            <path d="M14 11v5"/>
+        </svg>
     );
 }
 
