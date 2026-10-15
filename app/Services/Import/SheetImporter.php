@@ -14,9 +14,10 @@ class SheetImporter
 {
     public function __construct(
         private readonly GoogleSheetsService $googleSheets,
-        private readonly TableSchemaManager $schemaManager,
-        private readonly ColumnMapper $columnMapper,
-    ) {
+        private readonly TableSchemaManager  $schemaManager,
+        private readonly ColumnMapper        $columnMapper,
+    )
+    {
     }
 
     public function importSource(SheetSource $source): ImportRun
@@ -34,10 +35,10 @@ class SheetImporter
 
         try {
             $source->load([
-                'tabs' => fn ($query) => $query
+                'tabs' => fn($query) => $query
                     ->where('active', true)
                     ->with([
-                        'targets' => fn ($query) => $query
+                        'targets' => fn($query) => $query
                             ->where('active', true)
                             ->with('mappings'),
                     ]),
@@ -85,8 +86,9 @@ class SheetImporter
 
     private function importTarget(
         ImportTarget $target,
-        array $sourceRows
-    ): int {
+        array        $sourceRows
+    ): int
+    {
         $this->schemaManager->ensureTargetStructure($target);
 
         $tableName = $this->validateIdentifier(
@@ -144,8 +146,9 @@ class SheetImporter
 
     private function insertRows(
         string $tableName,
-        array $rows
-    ): int {
+        array  $rows
+    ): int
+    {
         foreach (array_chunk($rows, 500) as $chunk) {
             DB::table($tableName)->insert($chunk);
         }
@@ -155,8 +158,9 @@ class SheetImporter
 
     private function truncateAndInsert(
         string $tableName,
-        array $rows
-    ): int {
+        array  $rows
+    ): int
+    {
         DB::table($tableName)->truncate();
 
         return $this->insertRows(
@@ -167,9 +171,10 @@ class SheetImporter
 
     private function upsertRows(
         ImportTarget $target,
-        string $tableName,
-        array $rows
-    ): int {
+        string       $tableName,
+        array        $rows
+    ): int
+    {
         $uniqueBy = $target->unique_by ?? [];
 
         if ($uniqueBy === []) {
@@ -186,7 +191,7 @@ class SheetImporter
             $conditions = [];
 
             foreach ($uniqueBy as $column) {
-                if (! array_key_exists($column, $row)) {
+                if (!array_key_exists($column, $row)) {
                     throw new InvalidArgumentException(
                         "Upsert column [{$column}] is not mapped for target [{$tableName}]."
                     );
@@ -195,14 +200,18 @@ class SheetImporter
                 $conditions[$column] = $row[$column];
             }
 
-            $values = $row;
+            $existing = DB::table($tableName)
+                ->where($conditions);
 
-            unset($values['created_at']);
+            if ($existing->exists()) {
+                $updateValues = $row;
 
-            DB::table($tableName)->updateOrInsert(
-                $conditions,
-                $values
-            );
+                unset($updateValues['created_at']);
+
+                $existing->update($updateValues);
+            } else {
+                DB::table($tableName)->insert($row);
+            }
         }
 
         return count($rows);
@@ -210,7 +219,7 @@ class SheetImporter
 
     private function validateIdentifier(string $value): string
     {
-        if (! preg_match(
+        if (!preg_match(
             '/^[A-Za-z_][A-Za-z0-9_]*$/',
             $value
         )) {
