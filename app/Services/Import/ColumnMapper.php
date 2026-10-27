@@ -26,10 +26,8 @@ class ColumnMapper
      *     'product_price' => 1299.99,
      * ]
      */
-    public function mapRow(
-        array $sourceRow,
-        Collection $mappings
-    ): array {
+    public function mapRow(array $sourceRow, Collection $mappings): array
+    {
         $result = [];
 
         /** @var ColumnMapping $mapping */
@@ -43,7 +41,7 @@ class ColumnMapper
                     $value = null;
                 } else {
                     throw new RuntimeException(
-                        "Required source column [{$mapping->source_column}] ".
+                        "Required source column [{$mapping->source_column}] " .
                         "is missing or empty."
                     );
                 }
@@ -59,17 +57,15 @@ class ColumnMapper
         return $result;
     }
 
-    private function castValue(
-        mixed $value,
-        string $type
-    ): mixed {
+    private function castValue(mixed $value, string $type): mixed
+    {
         if ($value === null) {
             return null;
         }
 
         return match ($type) {
             'string',
-            'text' => (string) $value,
+            'text' => (string)$value,
 
             'integer',
             'bigInteger' => $this->toInteger($value),
@@ -92,24 +88,24 @@ class ColumnMapper
 
     private function toInteger(mixed $value): int
     {
-        if (! is_numeric($value)) {
+        if (!is_numeric($value)) {
             throw new RuntimeException(
                 "Value [{$value}] cannot be converted to integer."
             );
         }
 
-        return (int) $value;
+        return (int)$value;
     }
 
     private function toDecimal(mixed $value): float
     {
-        if (! is_numeric($value)) {
+        if (!is_numeric($value)) {
             throw new RuntimeException(
                 "Value [{$value}] cannot be converted to decimal."
             );
         }
 
-        return (float) $value;
+        return (float)$value;
     }
 
     private function toBoolean(mixed $value): bool
@@ -119,7 +115,7 @@ class ColumnMapper
         }
 
         $normalized = strtolower(
-            trim((string) $value)
+            trim((string)$value)
         );
 
         return match ($normalized) {
@@ -143,7 +139,7 @@ class ColumnMapper
     {
         try {
             return \Carbon\Carbon::parse(
-                (string) $value
+                (string)$value
             )->format('Y-m-d');
         } catch (\Throwable) {
             throw new RuntimeException(
@@ -156,7 +152,7 @@ class ColumnMapper
     {
         try {
             return \Carbon\Carbon::parse(
-                (string) $value
+                (string)$value
             )->format('Y-m-d H:i:s');
         } catch (\Throwable) {
             throw new RuntimeException(
@@ -175,7 +171,7 @@ class ColumnMapper
         }
 
         $decoded = json_decode(
-            (string) $value,
+            (string)$value,
             true
         );
 

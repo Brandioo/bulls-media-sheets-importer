@@ -13,15 +13,15 @@ class GoogleSheetsService
 
     public function __construct()
     {
-        $credentialsPath = (string) config(
+        $credentialsPath = (string)config(
             'google-sheets.credentials_path'
         );
 
-        if (! str_starts_with($credentialsPath, '/')) {
+        if (!str_starts_with($credentialsPath, '/')) {
             $credentialsPath = base_path($credentialsPath);
         }
 
-        if (! is_file($credentialsPath)) {
+        if (!is_file($credentialsPath)) {
             throw new RuntimeException(
                 "Google credentials file not found at [{$credentialsPath}]."
             );
@@ -30,7 +30,7 @@ class GoogleSheetsService
         $client = new Client();
 
         $client->setApplicationName(
-            (string) config('google-sheets.application_name')
+            (string)config('google-sheets.application_name')
         );
 
         $client->setScopes([
@@ -80,11 +80,8 @@ class GoogleSheetsService
      *     ],
      * ]
      */
-    public function getTabData(
-        string $spreadsheetId,
-        string $tabName,
-        int $headerRow = 1
-    ): array {
+    public function getTabData(string $spreadsheetId, string $tabName, int $headerRow = 1): array
+    {
         if ($headerRow < 1) {
             throw new InvalidArgumentException(
                 'Header row must be greater than or equal to 1.'
@@ -120,14 +117,14 @@ class GoogleSheetsService
 
         $headerIndex = $headerRow - 1;
 
-        if (! isset($values[$headerIndex])) {
+        if (!isset($values[$headerIndex])) {
             throw new RuntimeException(
                 "Header row [{$headerRow}] does not exist in tab [{$tabName}]."
             );
         }
 
         $headers = array_map(
-            static fn ($header) => trim((string) $header),
+            static fn($header) => trim((string)$header),
             $values[$headerIndex]
         );
 
@@ -135,10 +132,7 @@ class GoogleSheetsService
 
         $rows = [];
 
-        foreach (
-            array_slice($values, $headerRow)
-            as $row
-        ) {
+        foreach (array_slice($values, $headerRow) as $row) {
             if ($this->isEmptyRow($row)) {
                 continue;
             }
@@ -166,17 +160,15 @@ class GoogleSheetsService
             'headers' => array_values(
                 array_filter(
                     $headers,
-                    static fn ($header) => $header !== ''
+                    static fn($header) => $header !== ''
                 )
             ),
             'rows' => $rows,
         ];
     }
 
-    private function validateHeaders(
-        array $headers,
-        string $tabName
-    ): void {
+    private function validateHeaders(array $headers, string $tabName): void
+    {
         $usedHeaders = [];
 
         foreach ($headers as $header) {
@@ -199,7 +191,7 @@ class GoogleSheetsService
         foreach ($row as $value) {
             if (
                 $value !== null
-                && trim((string) $value) !== ''
+                && trim((string)$value) !== ''
             ) {
                 return false;
             }

@@ -12,14 +12,11 @@ class ImportGoogleSheets extends Command
     protected $signature = 'sheets:import
                             {--source= : Import only one SheetSource ID}';
 
-    protected $description =
-        'Import configured Google Sheets data into database tables';
+    protected $description = 'Import configured Google Sheets data into database tables';
 
-    public function handle(
-        SheetImporter $importer
-    ): int {
-        $query = SheetSource::query()
-            ->where('active', true);
+    public function handle(SheetImporter $importer): int
+    {
+        $query = SheetSource::query()->where('active', true);
 
         if ($sourceId = $this->option('source')) {
             $query->whereKey($sourceId);
@@ -44,7 +41,7 @@ class ImportGoogleSheets extends Command
                 $run = $importer->importSource($source);
 
                 $this->info(
-                    "Finished: {$run->rows_read} rows read, ".
+                    "Finished: {$run->rows_read} rows read, " .
                     "{$run->rows_written} rows written."
                 );
             } catch (Throwable $exception) {
@@ -56,8 +53,6 @@ class ImportGoogleSheets extends Command
             }
         }
 
-        return $failed
-            ? self::FAILURE
-            : self::SUCCESS;
+        return $failed ? self::FAILURE : self::SUCCESS;
     }
 }

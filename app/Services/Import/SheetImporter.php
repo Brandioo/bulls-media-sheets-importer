@@ -16,7 +16,9 @@ class SheetImporter
         private readonly GoogleSheetsService $googleSheets,
         private readonly TableSchemaManager  $schemaManager,
         private readonly ColumnMapper        $columnMapper,
-    ) {}
+    )
+    {
+    }
 
     public function importSource(SheetSource $source): ImportRun
     {
@@ -82,10 +84,7 @@ class SheetImporter
         }
     }
 
-    private function importTarget(
-        ImportTarget $target,
-        array        $sourceRows
-    ): int
+    private function importTarget(ImportTarget $target, array $sourceRows): int
     {
         $this->schemaManager->ensureTargetStructure($target);
 
@@ -108,7 +107,7 @@ class SheetImporter
 
         foreach ($sourceRows as $sourceRow) {
             foreach ($requiredSourceColumns as $column) {
-                if (! array_key_exists($column, $sourceRow)) {
+                if (!array_key_exists($column, $sourceRow)) {
                     throw new \RuntimeException(
                         "Missing required Google Sheet column [{$column}] for target [{$tableName}]."
                     );
@@ -157,10 +156,7 @@ class SheetImporter
         };
     }
 
-    private function insertRows(
-        string $tableName,
-        array  $rows
-    ): int
+    private function insertRows(string $tableName, array $rows): int
     {
         foreach (array_chunk($rows, 500) as $chunk) {
             DB::table($tableName)->insert($chunk);
@@ -169,10 +165,7 @@ class SheetImporter
         return count($rows);
     }
 
-    private function truncateAndInsert(
-        string $tableName,
-        array  $rows
-    ): int
+    private function truncateAndInsert(string $tableName, array $rows): int
     {
         DB::table($tableName)->truncate();
 
@@ -182,11 +175,7 @@ class SheetImporter
         );
     }
 
-    private function upsertRows(
-        ImportTarget $target,
-        string       $tableName,
-        array        $rows
-    ): int
+    private function upsertRows(ImportTarget $target, string $tableName, array $rows): int
     {
         $uniqueBy = $target->unique_by ?? [];
 

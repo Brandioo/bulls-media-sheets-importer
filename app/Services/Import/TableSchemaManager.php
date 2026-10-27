@@ -45,7 +45,7 @@ class TableSchemaManager
             );
         }
 
-        if (! Schema::hasTable($tableName)) {
+        if (!Schema::hasTable($tableName)) {
             Schema::create($tableName, function (Blueprint $table) use ($mappings) {
                 $table->id();
 
@@ -64,7 +64,7 @@ class TableSchemaManager
                 $mapping->target_column
             );
 
-            if (! Schema::hasColumn($tableName, $columnName)) {
+            if (!Schema::hasColumn($tableName, $columnName)) {
                 Schema::table(
                     $tableName,
                     function (Blueprint $table) use ($mapping) {
@@ -75,17 +75,15 @@ class TableSchemaManager
         }
     }
 
-    private function addColumn(
-        Blueprint $table,
-        ColumnMapping $mapping
-    ): void {
+    private function addColumn(Blueprint $table, ColumnMapping $mapping): void
+    {
         $columnName = $this->validateColumnName(
             $mapping->target_column
         );
 
         $type = $mapping->target_type;
 
-        if (! in_array($type, self::ALLOWED_TYPES, true)) {
+        if (!in_array($type, self::ALLOWED_TYPES, true)) {
             throw new InvalidArgumentException(
                 "Unsupported database type [{$type}]."
             );
@@ -126,7 +124,7 @@ class TableSchemaManager
 
         if (
             $mapping->default_value !== null
-            && ! in_array($type, ['text', 'json'], true)
+            && !in_array($type, ['text', 'json'], true)
         ) {
             $column->default(
                 $this->castDefaultValue(
@@ -153,11 +151,9 @@ class TableSchemaManager
         return $columnName;
     }
 
-    private function validateIdentifier(
-        string $value,
-        string $type
-    ): string {
-        if (! preg_match('/^[A-Za-z_][A-Za-z0-9_]*$/', $value)) {
+    private function validateIdentifier(string $value, string $type): string
+    {
+        if (!preg_match('/^[A-Za-z_][A-Za-z0-9_]*$/', $value)) {
             throw new InvalidArgumentException(
                 "Invalid {$type} identifier [{$value}]."
             );
@@ -168,7 +164,7 @@ class TableSchemaManager
 
     private function getStringLength(array $options): int
     {
-        $length = (int) ($options['length'] ?? 255);
+        $length = (int)($options['length'] ?? 255);
 
         if ($length < 1 || $length > 255) {
             throw new InvalidArgumentException(
@@ -181,7 +177,7 @@ class TableSchemaManager
 
     private function getDecimalPrecision(array $options): int
     {
-        $precision = (int) ($options['precision'] ?? 10);
+        $precision = (int)($options['precision'] ?? 10);
 
         if ($precision < 1 || $precision > 65) {
             throw new InvalidArgumentException(
@@ -195,7 +191,7 @@ class TableSchemaManager
     private function getDecimalScale(array $options): int
     {
         $precision = $this->getDecimalPrecision($options);
-        $scale = (int) ($options['scale'] ?? 2);
+        $scale = (int)($options['scale'] ?? 2);
 
         if ($scale < 0 || $scale > $precision) {
             throw new InvalidArgumentException(
@@ -206,15 +202,13 @@ class TableSchemaManager
         return $scale;
     }
 
-    private function castDefaultValue(
-        string $value,
-        string $type
-    ): mixed {
+    private function castDefaultValue(string $value, string $type): mixed
+    {
         return match ($type) {
             'integer',
-            'bigInteger' => (int) $value,
+            'bigInteger' => (int)$value,
 
-            'decimal' => (float) $value,
+            'decimal' => (float)$value,
 
             'boolean' => filter_var(
                 $value,

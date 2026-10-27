@@ -27,8 +27,7 @@ class ConfigurationController extends Controller
                                 $query
                                     ->orderBy('id')
                                     ->with([
-                                        'mappings' => fn ($query) =>
-                                        $query->orderBy('id'),
+                                        'mappings' => fn($query) => $query->orderBy('id'),
                                     ]);
                             },
                         ]);
@@ -79,10 +78,8 @@ class ConfigurationController extends Controller
         );
     }
 
-    public function updateSource(
-        Request $request,
-        SheetSource $source
-    ): JsonResponse {
+    public function updateSource(Request $request, SheetSource $source): JsonResponse
+    {
         $data = $request->validate([
             'name' => [
                 'sometimes',
@@ -113,9 +110,8 @@ class ConfigurationController extends Controller
         );
     }
 
-    public function destroySource(
-        SheetSource $source
-    ): JsonResponse {
+    public function destroySource(SheetSource $source): JsonResponse
+    {
         $source->delete();
 
         return response()->json([
@@ -161,10 +157,8 @@ class ConfigurationController extends Controller
         );
     }
 
-    public function updateTab(
-        Request $request,
-        SheetTab $tab
-    ): JsonResponse {
+    public function updateTab(Request $request, SheetTab $tab): JsonResponse
+    {
         $data = $request->validate([
             'name' => [
                 'sometimes',
@@ -190,9 +184,8 @@ class ConfigurationController extends Controller
         );
     }
 
-    public function destroyTab(
-        SheetTab $tab
-    ): JsonResponse {
+    public function destroyTab(SheetTab $tab): JsonResponse
+    {
         $tab->delete();
 
         return response()->json([
@@ -200,9 +193,8 @@ class ConfigurationController extends Controller
         ]);
     }
 
-    public function storeTarget(
-        Request $request
-    ): JsonResponse {
+    public function storeTarget(Request $request): JsonResponse
+    {
         $data = $request->validate([
             'sheet_tab_id' => [
                 'required',
@@ -251,10 +243,8 @@ class ConfigurationController extends Controller
         );
     }
 
-    public function updateTarget(
-        Request $request,
-        ImportTarget $target
-    ): JsonResponse {
+    public function updateTarget(Request $request, ImportTarget $target): JsonResponse
+    {
         $data = $request->validate([
             'table_name' => [
                 'sometimes',
@@ -292,9 +282,8 @@ class ConfigurationController extends Controller
         );
     }
 
-    public function destroyTarget(
-        ImportTarget $target
-    ): JsonResponse {
+    public function destroyTarget(ImportTarget $target): JsonResponse
+    {
         $target->delete();
 
         return response()->json([
@@ -302,10 +291,8 @@ class ConfigurationController extends Controller
         ]);
     }
 
-    public function storeMapping(
-        Request $request,
-        TableSchemaManager $schemaManager
-    ): JsonResponse {
+    public function storeMapping(Request $request, TableSchemaManager $schemaManager): JsonResponse
+    {
         $data = $this->validateMapping(
             $request
         );
@@ -326,11 +313,8 @@ class ConfigurationController extends Controller
         );
     }
 
-    public function updateMapping(
-        Request $request,
-        ColumnMapping $mapping,
-        TableSchemaManager $schemaManager
-    ): JsonResponse {
+    public function updateMapping(Request $request, ColumnMapping $mapping, TableSchemaManager $schemaManager): JsonResponse
+    {
         $data = $this->validateMapping(
             $request,
             true
@@ -351,9 +335,8 @@ class ConfigurationController extends Controller
         );
     }
 
-    public function destroyMapping(
-        ColumnMapping $mapping
-    ): JsonResponse {
+    public function destroyMapping(ColumnMapping $mapping): JsonResponse
+    {
         /*
          * We intentionally delete only the configuration.
          * Existing destination columns are not automatically
@@ -366,10 +349,8 @@ class ConfigurationController extends Controller
         ]);
     }
 
-    public function importSource(
-        SheetSource $source,
-        SheetImporter $importer
-    ): JsonResponse {
+    public function importSource(SheetSource $source, SheetImporter $importer): JsonResponse
+    {
         $run = $importer
             ->importSource($source);
 
@@ -379,10 +360,8 @@ class ConfigurationController extends Controller
         ]);
     }
 
-    private function validateMapping(
-        Request $request,
-        bool $update = false
-    ): array {
+    private function validateMapping(Request $request, bool $update = false): array
+    {
         $sometimes = $update
             ? 'sometimes'
             : 'required';
