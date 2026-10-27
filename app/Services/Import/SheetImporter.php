@@ -16,9 +16,7 @@ class SheetImporter
         private readonly GoogleSheetsService $googleSheets,
         private readonly TableSchemaManager  $schemaManager,
         private readonly ColumnMapper        $columnMapper,
-    )
-    {
-    }
+    ) {}
 
     public function importSource(SheetSource $source): ImportRun
     {
