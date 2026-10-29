@@ -38,26 +38,14 @@ export default function App() {
     const [sources, setSources] = useState([]);
     const [runs, setRuns] = useState([]);
 
-    const [sourceForm, setSourceForm] =
-        useState(EMPTY_SOURCE);
+    const [sourceForm, setSourceForm] = useState(EMPTY_SOURCE);
+    const [tabForm, setTabForm] = useState(EMPTY_TAB);
+    const [targetForm, setTargetForm] = useState(EMPTY_TARGET);
+    const [mappingForm, setMappingForm] = useState(EMPTY_MAPPING);
 
-    const [tabForm, setTabForm] =
-        useState(EMPTY_TAB);
-
-    const [targetForm, setTargetForm] =
-        useState(EMPTY_TARGET);
-
-    const [mappingForm, setMappingForm] =
-        useState(EMPTY_MAPPING);
-
-    const [loading, setLoading] =
-        useState(true);
-
-    const [message, setMessage] =
-        useState('');
-
-    const [error, setError] =
-        useState('');
+    const [loading, setLoading] = useState(true);
+    const [message, setMessage] = useState('');
+    const [error, setError] = useState('');
 
     const loadConfiguration =
         useCallback(async () => {
@@ -1110,7 +1098,7 @@ function SourceCard({
                                                             title="Delete mapping"
                                                             aria-label="Delete mapping"
                                                         >
-                                                            <TrashIcon />
+                                                            <TrashIcon/>
                                                         </button>
                                                     </div>
                                                 </div>
